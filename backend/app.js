@@ -4,13 +4,27 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+const rawFrontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+const allowedOrigin = rawFrontendUrl.replace(/\/+$/, "");
+const extraOrigins = (process.env.FRONTEND_URLS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map((s) => s.replace(/\/+$/, ""));
+const allowedOrigins = [allowedOrigin, "http://localhost:5173", ...extraOrigins];
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.options("*", cors());
 app.use(
   express.json({
     verify: (req, res, buf) => {
