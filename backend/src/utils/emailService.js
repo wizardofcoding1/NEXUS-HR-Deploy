@@ -18,7 +18,19 @@ const sendEmail = async ({ to, subject, html }) => {
         html
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.verify();
+    } catch (error) {
+        console.error("Email transporter verify failed:", error?.message || error);
+        throw error;
+    }
+
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error("Send email failed:", error?.message || error);
+        throw error;
+    }
 };
 
 module.exports = sendEmail;
