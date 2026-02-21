@@ -140,7 +140,7 @@ class AuthController {
             res.cookie("token", token, {
                 httpOnly: true,
                 secure: isProd,
-                sameSite: "lax",
+                sameSite: isProd ? "none" : "lax",
                 maxAge: 24 * 60 * 60 * 1000,
             });
 
@@ -393,7 +393,7 @@ class AuthController {
         res.clearCookie("token", {
             httpOnly: true,
             secure: isProd,
-            sameSite: "lax",
+            sameSite: isProd ? "none" : "lax",
         });
         sendResponse(res, "Logged out successfully");
     }
