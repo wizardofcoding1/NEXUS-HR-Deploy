@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { FiUserPlus } from "react-icons/fi";
 import MainLayout from "../../layouts/MainLayout";
 import { getHRs, createHR, toggleHRStatus } from "../../services/adminService";
 import { deleteEmployee } from "../../services/employeeService";
 import { toastError, toastSuccess } from "../../utils/toast";
 import ConfirmModal from "../../components/ui/ConfirmModal";
+import Button from "../../components/ui/Button";
 import useFilters from "../../hooks/useFilters";
 import useForm from "../../hooks/useForm";
 import useAsync from "../../hooks/useAsync";
@@ -11,6 +13,7 @@ import useAsync from "../../hooks/useAsync";
 const HRManagement = () => {
     const [hrs, setHrs] = useState([]);
     const [generated, setGenerated] = useState(null);
+    const [creating, setCreating] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -53,6 +56,8 @@ const HRManagement = () => {
 
     const handleCreateHR = async (e) => {
         e.preventDefault();
+        if (creating) return;
+        setCreating(true);
         try {
             const payload = { ...form };
             if (form.autoGeneratePassword || !form.password) delete payload.password;
@@ -71,6 +76,8 @@ const HRManagement = () => {
             });
         } catch (error) {
             toastError(error?.response?.data?.message || "Failed to create HR");
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -179,9 +186,17 @@ const HRManagement = () => {
                                     )}
                                 </div>
 
-                                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow-sm transition-colors text-sm">
-                                    Create HR Account
-                                </button>
+                                <Button
+                                    type="submit"
+                                    isLoading={creating}
+                                    loadingLabel="Creating HR..."
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow-sm transition-colors text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    <span className="inline-flex items-center justify-center gap-2">
+                                        <FiUserPlus />
+                                        Create HR Account
+                                    </span>
+                                </Button>
                             </form>
                         </div>
                     </div>
