@@ -1,24 +1,36 @@
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
-const sendEmail = async ({ to, subject, html }) => {
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, //TLS
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        }
-    });
+const sendEmail = async ({ to, subject, html, text, from }) => {
+    const apiKey = process.env.SENDGRID_API_KEY;
+    if (!apiKey) {
+        throw new Error("SENDGRID_API_KEY is not set");
+    }
 
-    const mailOptions = {
-        from: `"HRMS Support" <${process.env.EMAIL_USER}>`,
+    sgMail.setApiKey(apiKey);
+
+    const defaultFrom =
+        process.env.EMAIL_FROM ||
+        process.env.EMAIL_USER ||
+        "HRMS Support <no-reply@noreply.local>";
+
+    const msg = {
         to,
+        from: from || defaultFrom,
         subject,
-        html
+        html,
+        text,
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+        await sgMail.send(msg);
+        console.log(`Email sent to ${to}`);
+    } catch (error) {
+        console.error("Send email failed:", error?.message || error);
+        if (error?.response?.body) {
+            console.error("SendGrid error body:", error.response.body);
+        }
+        throw error;
+    }
 };
 
 module.exports = sendEmail;
