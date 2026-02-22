@@ -25,7 +25,7 @@ app.use(
   })
 );
 app.options(/.*/, cors());
->>>>>>> 868ab9ee3022d2048b2349db0d1ef129f88d2d2b
+
 app.use(
   express.json({
     verify: (req, res, buf) => {
