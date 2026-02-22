@@ -4,15 +4,6 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-<<<<<<< HEAD
-const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
-app.use(
-  cors({
-    origin: allowedOrigin,
-    credentials: true,
-  })
-);
-=======
 const rawFrontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 const allowedOrigin = rawFrontendUrl.replace(/\/+$/, "");
 const extraOrigins = (process.env.FRONTEND_URLS || "")
