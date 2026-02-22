@@ -1,3 +1,4 @@
+
 const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend");
 
 const sendEmail = async ({ to, subject, html }) => {

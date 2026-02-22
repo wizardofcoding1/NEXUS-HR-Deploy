@@ -13,6 +13,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@sendgrid/mail": "^8.1.6",
+>>>>>>> 868ab9ee3022d2048b2349db0d1ef129f88d2d2b
     "axios": "^1.13.4",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
