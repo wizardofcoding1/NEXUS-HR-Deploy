@@ -1,81 +1,29 @@
-const axios = require("axios");
+const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend");
 
-const parseFrom = (value) => {
-    const fallback = {
-        email: "support@test-yxj6lj9qn2x4do2r.mlsender.net",
-        name: "HRMS Support",
-    };
-
-    if (!value) return fallback;
-
-    const match = String(value).match(/^\s*"?([^"]+?)"?\s*<([^>]+)>\s*$/);
-
-    if (match) {
-        return {
-            name: match[1].trim(),
-            email: match[2].trim(),
-        };
-    }
-
-    return {
-        email: String(value).trim(),
-        name: fallback.name,
-    };
-};
-
-const sendEmail = async ({ to, subject, html, text, from }) => {
-    const apiKey = process.env.MAILERSEND_API_KEY;
-
+const sendEmail = async ({ to, subject, html }) => {
+    const apiKey = process.env.MAILERSEND_API_KEY || process.env.API_KEY;
     if (!apiKey) {
-        throw new Error("MAILERSEND_API_KEY is not set in .env");
+        throw new Error("Missing MailerSend API key. Set MAILERSEND_API_KEY (or API_KEY).");
     }
 
-    const defaultFrom =
-        process.env.EMAIL_FROM ||
-        "HRMS Support <support@test-yxj6lj9qn2x4do2r.mlsender.net>";
+    const mailerSend = new MailerSend({ apiKey });
 
-    const sender = parseFrom(from || defaultFrom);
-
-    const recipients = Array.isArray(to)
-        ? to.map((email) => ({ email }))
-        : [{ email: to }];
-
-    const payload = {
-        from: sender,
-        to: recipients,
-        subject,
-        html,
-        text,
-    };
-
-    try {
-        const response = await axios.post(
-            "https://api.mailersend.com/v1/email",
-            payload,
-            {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                },
-                timeout: 15000,
-            }
-        );
-
-        console.log("✅ Email sent successfully:", response.data);
-        return true;
-
-    } catch (error) {
-        console.error("❌ Email sending failed");
-
-        if (error.response) {
-            console.error("Status:", error.response.status);
-            console.error("Data:", error.response.data);
-        } else {
-            console.error(error.message);
-        }
-
-        throw new Error("Failed to send email");
+    const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+    if (!fromEmail) {
+        throw new Error("Missing sender email. Set EMAIL_FROM (or EMAIL_USER).");
     }
+
+    const fromName = process.env.EMAIL_FROM_NAME || "HRMS Support";
+    const sentFrom = new Sender(fromEmail, fromName);
+    const recipients = [new Recipient(to)];
+
+    const emailParams = new EmailParams()
+        .setFrom(sentFrom)
+        .setTo(recipients)
+        .setSubject(subject)
+        .setHtml(html);
+
+    await mailerSend.email.send(emailParams);
 };
 
 module.exports = sendEmail;
