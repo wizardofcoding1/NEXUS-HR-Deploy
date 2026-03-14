@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+app.set("trust proxy", 1);
 
 // Middleware
 const rawFrontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
